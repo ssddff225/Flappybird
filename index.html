@@ -2,103 +2,69 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Flappy Bird</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
     body {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-height: 100vh;
-      background: linear-gradient(to bottom, #87CEEB, #1E90FF);
+      height: 100vh; background: linear-gradient(to bottom, #87CEEB, #1E90FF);
       overflow: hidden;
-      touch-action: manipulation;
     }
     h1 {
-      font-size: 7vw; color: #fff;
-      text-shadow: 2px 2px 5px black;
-      margin-bottom: 2vh;
+      font-size: 40px; color: #fff; text-shadow: 2px 2px 5px black; margin-bottom: 10px;
     }
     canvas {
       display: none;
-      border: 4px solid black;
-      border-radius: 10px;
-      max-width: 95vw;
-      max-height: 70vh;
+      border: 4px solid black; border-radius: 10px;
+      max-width: 100%; height: auto;
     }
     .options, .btn-container {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
+      margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
     }
     button, select {
-      padding: 10px 20px;
-      font-size: 4vw;
-      border: none;
-      cursor: pointer;
-      background: linear-gradient(to right, #FF4500, #FF6347);
-      color: white;
-      border-radius: 10px;
+      padding: 12px 20px; font-size: 16px; border: none; cursor: pointer;
+      background: linear-gradient(to right, #FF4500, #FF6347); color: white; border-radius: 10px;
       transition: transform 0.3s ease, background 0.3s ease;
       box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
     }
-    button:hover {
-      background: linear-gradient(to right, #FF6347, #FF4500);
-      transform: scale(1.05);
-    }
-    select {
-      background: #FFD700;
-      color: black;
-      font-weight: bold;
-    }
+    button:hover { background: linear-gradient(to right, #FF6347, #FF4500); transform: scale(1.1); }
+    select { background: #FFD700; color: black; font-weight: bold; border-radius: 10px; }
     #highScore {
-      font-size: 4vw;
-      margin-top: 1vh;
-      font-weight: bold;
-      color: black;
+      font-size: 20px; margin-top: 10px; font-weight: bold; color: black;
     }
     .game-over {
-      display: none;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.8);
-      padding: 20px;
-      border-radius: 10px;
-      color: white;
-      font-size: 5vw;
-      text-align: center;
+      display: none; position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%); background: rgba(0,0,0,0.8);
+      padding: 20px; border-radius: 10px; color: white; font-size: 24px;
+      text-align: center; z-index: 2;
     }
     .score-panel {
-      position: absolute;
-      top: 1vh;
-      right: 2vw;
-      background: rgba(255, 255, 255, 0.5);
-      padding: 5px 10px;
-      border-radius: 10px;
-      font-size: 4vw;
-      font-weight: bold;
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(255, 255, 255, 0.5); padding: 8px 12px;
+      border-radius: 10px; font-size: 18px; font-weight: bold;
     }
   </style>
 </head>
 <body>
   <h1>Flappy Bird</h1>
-  <canvas id="gameCanvas"></canvas>
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
   <div class="score-panel" id="scorePanel">Score: 0</div>
+
   <div class="options">
-    <label for="powerUp" style="color: black; font-size: 4vw;">Power-Up:</label>
+    <label for="powerUp" style="color: black; font-size: 16px;">Select Power-Up:</label>
     <select id="powerUp">
       <option value="none">None</option>
       <option value="slow">Slow Motion</option>
       <option value="wide">Wider</option>
     </select>
   </div>
+
   <div class="btn-container">
     <button id="startBtn">Start Game</button>
     <button id="restartBtn" style="display: none;">Restart</button>
   </div>
+
   <p id="highScore">Highest Score: 0</p>
   <div class="game-over" id="gameOverScreen">Game Over! Tap Restart</div>
 
@@ -111,13 +77,6 @@
     const powerUpSelect = document.getElementById("powerUp");
     const gameOverScreen = document.getElementById("gameOverScreen");
     const scorePanel = document.getElementById("scorePanel");
-
-    function resizeCanvas() {
-      canvas.width = Math.min(window.innerWidth * 0.9, 400);
-      canvas.height = Math.min(window.innerHeight * 0.7, 600);
-    }
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
 
     const backgroundImg = new Image();
     backgroundImg.src = "back.jpg";
@@ -132,20 +91,22 @@
     let highestScore = localStorage.getItem("highScore") || 0;
 
     function initGame() {
-      let selectedPower = powerUpSelect.value;
-      bird = { x: 50, y: canvas.height / 2, width: 40, height: 30, velocity: 0 };
+      const selectedPower = powerUpSelect.value;
+      bird = { x: 50, y: 250, width: 40, height: 30, velocity: 0 };
       pipes = [];
       gameOver = false;
       score = 0;
-      gravity = 0.5;
-      pipeSpeed = 3;
-      pipeGap = 120;
+      gravity = 0.25; // slower fall
+      pipeSpeed = 2.5;
+      pipeGap = 130;
+
       if (selectedPower === "slow") {
-        gravity = 0.2;
+        gravity = 0.15;
         pipeSpeed = 1.5;
       } else if (selectedPower === "wide") {
         pipeGap = 200;
       }
+
       spawnPipe();
       canvas.style.display = "block";
       startBtn.style.display = "none";
@@ -156,25 +117,30 @@
     }
 
     function spawnPipe() {
-      let pipeHeight = Math.floor(Math.random() * (canvas.height / 2)) + 50;
-      let bottomPipeY = pipeHeight + pipeGap;
+      const pipeHeight = Math.floor(Math.random() * 250) + 100;
+      const bottomPipeY = pipeHeight + pipeGap;
       pipes.push({ x: canvas.width, topY: 0, bottomY: bottomPipeY, height: pipeHeight });
     }
 
     function update() {
       if (gameOver) return;
+
       bird.velocity += gravity;
       bird.y += bird.velocity;
+
       if (bird.y + bird.height > canvas.height || bird.y < 0) {
         endGame();
       }
+
       for (let i = 0; i < pipes.length; i++) {
         pipes[i].x -= pipeSpeed;
+
         if (pipes[i].x + 70 < 0) {
           pipes.splice(i, 1);
           score++;
           scorePanel.textContent = "Score: " + score;
         }
+
         if (
           bird.x < pipes[i].x + 70 &&
           bird.x + bird.width > pipes[i].x &&
@@ -183,6 +149,7 @@
           endGame();
         }
       }
+
       if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 200) {
         spawnPipe();
       }
@@ -206,7 +173,7 @@
 
     function endGame() {
       gameOver = true;
-      restartBtn.style.display = "block";
+      restartBtn.style.display = "inline-block";
       gameOverScreen.style.display = "block";
       if (score > highestScore) {
         highestScore = score;
@@ -215,18 +182,18 @@
       highScoreLabel.textContent = "Highest Score: " + highestScore;
     }
 
-    function jump() {
-      if (!gameOver) bird.velocity = -8;
-    }
-
-    // Controls: Keyboard + Touch
-    document.addEventListener("keydown", (event) => {
-      if (event.code === "Space") jump();
+    // Keyboard control
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space" && !gameOver) {
+        bird.velocity = -6; // slower jump
+      }
     });
 
-    canvas.addEventListener("touchstart", jump);
-    document.body.addEventListener("touchstart", (e) => {
-      if (canvas.style.display === "block") jump();
+    // Mobile tap control
+    canvas.addEventListener("touchstart", () => {
+      if (!gameOver) {
+        bird.velocity = -6; // match with keyboard
+      }
     });
 
     startBtn.addEventListener("click", initGame);
